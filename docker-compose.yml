@@ -1,0 +1,71 @@
+mongo-replica:
+  build: mongo
+  command: --smallfiles --rest --replSet "rs0"
+  environment:
+    - HOSTIP=192.168.99.100
+  ports:
+    - "27018:27017"
+    - "28018:28017"
+
+mongo:
+  build: mongo
+  command: --smallfiles --rest --replSet "rs0"
+  environment:
+    - HOSTIP=192.168.99.100
+  ports:
+    - "27017:27017"
+    - "28017:28017"
+
+postgres:
+  build: postgres
+  environment:
+    - POSTGRES_USER=amiel
+    - POSTGRES_DB=amiel_test
+  ports:
+    - "5432:5432"
+
+rabbitmq:
+  image: rabbitmq:3-management
+  environment:
+    - RABBITMQ_DEFAULT_PASS=p4ssw0rd
+    - RABBITMQ_DEFAULT_USER=user
+  ports:
+    - "5672:5672"
+    - "15672:15672"
+    - "4369:4369"
+    - "5671:5671"
+    - "25672:25672"
+
+elasticsearch:
+  build: elasticsearch
+  ports:
+    - "9200:9200"
+
+dynamodb:
+  image: deangiberson/aws-dynamodb-local
+  ports:
+    - "8000:8000"
+
+memcached:
+  image: memcached
+  ports:
+    - "11211:11211"
+  restart: always
+
+mysql:
+  image: mysql
+  ports:
+    - "3306:3306"
+  environment:
+    - MYSQL_ROOT_PASSWORD=root
+
+mongo-setup:
+  build: mongo
+  environment:
+    - HOSTIP=192.168.99.100
+  links:
+    - mongo
+    - mongo-replica
+  volumes:
+    - ./scripts:/scripts
+  entrypoint: ["bash", "/scripts/config-mongo-replica.sh" ]
